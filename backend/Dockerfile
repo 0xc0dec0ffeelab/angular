@@ -3,7 +3,7 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 RUN npm ci
 
@@ -11,21 +11,20 @@ COPY . .
 
 RUN npm run build
 
-# Remove development dependencies
-RUN npm prune --omit=dev
 
-
-# Stage 2: Runtime
+# Stage 2: Production
 FROM node:22-alpine
+
+WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
-WORKDIR /app
+COPY package.json package-lock.json ./
 
-COPY --from=build /app/node_modules ./node_modules
+RUN npm ci --omit=dev && npm cache clean --force
+
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/package.json ./package.json
 
 USER node
 
