@@ -1,0 +1,27 @@
+# 管理 Namespace、ConfigMap、ResourceQuota、LimitRange。
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: angular-platform
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/0xc0dec0ffeelab/angular.git
+    targetRevision: main
+    path: infra/k8s
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: angular-local
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true

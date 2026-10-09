@@ -1,0 +1,12 @@
+# 這一份保留原本設定，之後供 NestJS 或其他應用程式引用。
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: angular-config
+  namespace: angular-local
+
+data:
+  NODE_ENV: "development"
+  LOG_LEVEL: "debug"
+  ENVIRONMENT: "local"

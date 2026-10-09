@@ -1,0 +1,16 @@
+# Pod Security Admission 設定僅作用於 angular-local，不會直接限制 argocd、traefik、monitoring 或 kube-system
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: angular-local
+
+  labels:
+    app.kubernetes.io/name: angular
+    app.kubernetes.io/part-of: angular
+
+    environment: local
+
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted

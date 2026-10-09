@@ -1,0 +1,29 @@
+# Root Application 是 GitOps 入口
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: angular-infra
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: angular
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/0xc0dec0ffeelab/angular.git
+    targetRevision: main
+    path: infra/apps
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=true
