@@ -23,7 +23,11 @@ spec:
           replicas: 1
 
         service:
-          type: ClusterIP
+          type: NodePort
+          spec:
+          ports:
+            - name: web
+              nodePort: 30080
 
         providers:
           kubernetesIngress:
