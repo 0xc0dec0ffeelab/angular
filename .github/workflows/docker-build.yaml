@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   packages: write
 
 concurrency:
@@ -22,9 +22,11 @@ concurrency:
 
 jobs:
   build:
+    name: Build ${{ matrix.name }}
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: frontend
@@ -54,19 +56,33 @@ jobs:
         with:
           context: ${{ matrix.context }}
           push: true
+          platforms: linux/amd64
           tags: |
             ghcr.io/0xc0dec0ffeelab/${{ matrix.image }}:latest
             ghcr.io/0xc0dec0ffeelab/${{ matrix.image }}:${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
+      - name: Verify Image Manifest
+        run: |
+          docker buildx imagetools inspect \
+            ghcr.io/0xc0dec0ffeelab/${{ matrix.image }}:${{ github.sha }}
+
+      - name: Verify Image Pull
+        run: |
+          docker pull \
+            ghcr.io/0xc0dec0ffeelab/${{ matrix.image }}:${{ github.sha }}
+
   update-gitops:
     name: Update GitOps manifests
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout
+      - name: Checkout latest main
         uses: actions/checkout@v4
         with:
           ref: main
@@ -78,44 +94,49 @@ jobs:
         run: |
           python3 - <<'PY'
           import os
-          import re
           from pathlib import Path
+          import yaml
 
           path = Path("infra/k8s/workloads/kustomization.yaml")
-          content = path.read_text(encoding="utf-8")
+          data = yaml.safe_load(path.read_text(encoding="utf-8"))
+
           tag = os.environ["IMAGE_TAG"]
+          expected = {
+              "ghcr.io/0xc0dec0ffeelab/angular-frontend",
+              "ghcr.io/0xc0dec0ffeelab/angular-backend",
+          }
 
-          for image in ("angular-frontend", "angular-backend"):
-              name = f"ghcr.io/0xc0dec0ffeelab/{image}"
-              pattern = (
-                  r"(^\s*-\s*name:\s*" + re.escape(name)
-                  + r"\s*\n\s*newTag:\s*)\S+"
+          updated = set()
+
+          for image in data.get("images", []):
+              name = image.get("name")
+
+              if name in expected:
+                  image["newTag"] = tag
+                  updated.add(name)
+
+          if updated != expected:
+              missing = expected - updated
+              raise RuntimeError(
+                  f"Missing image entries: {sorted(missing)}"
               )
 
-              content, count = re.subn(
-                  pattern,
-                  lambda m: m.group(1) + tag,
-                  content,
-                  flags=re.MULTILINE,
-              )
-
-              if count != 1:
-                  raise RuntimeError(
-                      f"Expected one image entry for {name}, found {count}"
-                  )
-
-          path.write_text(content, encoding="utf-8")
+          path.write_text(
+              yaml.safe_dump(data, sort_keys=False),
+              encoding="utf-8",
+          )
           PY
 
-      - name: Commit and push GitOps changes
+      - name: Commit and Push GitOps Changes
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add infra/k8s/workloads/kustomization.yaml
 
           if git diff --cached --quiet; then
-            echo "No changes to commit"
+            echo "No GitOps changes detected"
             exit 0
           fi
 
@@ -123,12 +144,13 @@ jobs:
 
           for attempt in 1 2 3; do
             if git push origin HEAD:main; then
+              echo "GitOps manifests updated"
               exit 0
             fi
 
             echo "Push failed, retrying ($attempt/3)"
             git fetch origin main
-            git rebase origin/main
+            git rebase origin/main || exit 1
             sleep 3
           done
 
