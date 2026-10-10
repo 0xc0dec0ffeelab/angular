@@ -11,7 +11,7 @@ resources:
 
 images:
   - name: ghcr.io/0xc0dec0ffeelab/angular-frontend
-    newTag: latest
+    newTag: 64e8a97b48e62773a7f50e880bdf11c7f3051445
 
   - name: ghcr.io/0xc0dec0ffeelab/angular-backend
-    newTag: latest
+    newTag: 64e8a97b48e62773a7f50e880bdf11c7f3051445
