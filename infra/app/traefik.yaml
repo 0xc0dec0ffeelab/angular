@@ -24,10 +24,14 @@ spec:
 
         service:
           type: NodePort
-          spec:
-          ports:
-            - name: web
-              nodePort: 30080
+        
+        ports:
+          web:
+            port: 8000
+            exposedPort: 80
+            nodePort: 30080
+            expose:
+              default: true
 
         providers:
           kubernetesIngress:
