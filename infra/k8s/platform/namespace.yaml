@@ -6,11 +6,5 @@ metadata:
   name: angular-local
 
   labels:
-    app.kubernetes.io/name: angular
     app.kubernetes.io/part-of: angular
-
     environment: local
-
-    pod-security.kubernetes.io/enforce: baseline
-    pod-security.kubernetes.io/audit: restricted
-    pod-security.kubernetes.io/warn: restricted

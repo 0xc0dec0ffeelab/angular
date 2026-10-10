@@ -1,4 +1,5 @@
-# 由 Argo CD 安裝 Traefik Helm Chart，作為未來 Angular / NestJS 的網路入口
+# Traefik 的 Helm Chart 可建立 Gateway 與 GatewayClass，並支援其他 Namespace 的 HTTPRoute 綁定
+# 這裡使用 ClusterIP，先透過 Port Forward 從 Windows 存取，不需要處理 VirtualBox 的 LoadBalancer 網路
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 
@@ -31,9 +32,9 @@ spec:
           kubernetesGateway:
             enabled: true
 
-        ingressClass:
+        gatewayClass:
           enabled: true
-          isDefaultClass: false
+          name: traefik
 
         gateway:
           enabled: true
@@ -46,16 +47,11 @@ spec:
               namespacePolicy:
                 from: All
 
-        gatewayClass:
-          enabled: true
-          name: traefik
-
         resources:
           requests:
             cpu: 50m
             memory: 64Mi
           limits:
-            cpu: 250m
             memory: 256Mi
 
   destination:
@@ -69,4 +65,3 @@ spec:
 
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true

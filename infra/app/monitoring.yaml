@@ -31,12 +31,7 @@ spec:
 
         server:
           replicaCount: 1
-
           retention: "24h"
-
-          global:
-            scrape_interval: 30s
-            evaluation_interval: 30s
 
           persistentVolume:
             enabled: false
@@ -46,7 +41,6 @@ spec:
               cpu: 100m
               memory: 256Mi
             limits:
-              cpu: 500m
               memory: 768Mi
 
   destination:
@@ -60,4 +54,3 @@ spec:
 
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true

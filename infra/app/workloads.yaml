@@ -1,12 +1,10 @@
-# Root Application 是 GitOps 入口 (Argo CD)
+# 管理前後端 Deployment、Service 和 HTTPRoute
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 
 metadata:
-  name: angular-infra
+  name: angular-workloads
   namespace: argocd
-  labels:
-    app.kubernetes.io/part-of: angular
 
 spec:
   project: default
@@ -14,11 +12,11 @@ spec:
   source:
     repoURL: https://github.com/0xc0dec0ffeelab/angular.git
     targetRevision: main
-    path: infra/app
+    path: infra/k8s/workloads
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: angular-local
 
   syncPolicy:
     automated:

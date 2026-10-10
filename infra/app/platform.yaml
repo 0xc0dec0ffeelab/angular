@@ -1,4 +1,4 @@
-# 管理 Namespace、ConfigMap、ResourceQuota、LimitRange。
+# 管理 Namespace、ConfigMap
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 
