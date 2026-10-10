@@ -1,17 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
 namespace: angular-local
-
 resources:
-  - frontend.yaml
-  - backend.yaml
-  - httproute.yaml
-  - backend-sealedsecret.yaml
-
+- frontend.yaml
+- backend.yaml
+- httproute.yaml
+- backend-sealedsecret.yaml
 images:
-  - name: ghcr.io/0xc0dec0ffeelab/angular-frontend
-    newTag: 64e8a97b48e62773a7f50e880bdf11c7f3051445
-
-  - name: ghcr.io/0xc0dec0ffeelab/angular-backend
-    newTag: 64e8a97b48e62773a7f50e880bdf11c7f3051445
+- name: ghcr.io/0xc0dec0ffeelab/angular-frontend
+  newTag: 048a5f41afbfe23d3114c2244a8c1ebe38dd9d23
+- name: ghcr.io/0xc0dec0ffeelab/angular-backend
+  newTag: 048a5f41afbfe23d3114c2244a8c1ebe38dd9d23
